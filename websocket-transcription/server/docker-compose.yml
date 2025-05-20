@@ -4,7 +4,8 @@ services:
     build:
       context: .
       args:
-        MODEL: tiny.en
+        # MODEL: tiny.en
+        MODEL: medium.en
     image: alexmickelson/whisper-streaming:latest
     container_name: whisper-streaming
     volumes:
