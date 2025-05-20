@@ -7,15 +7,14 @@ services:
     container_name: whisper-streaming
     volumes:
       - ./cache:/app/cache
-    environment:
-      - MODEL=medium.en
     env_file:
       # HF_TOKEN=your read only token
       # accept terms at 
       # - https://huggingface.co/pyannote/segmentation
       # - https://huggingface.co/pyannote/embedding
       # - https://huggingface.co/pyannote/embedding-3.0
-      - .env 
+      - .env
+    command: uv run whisperlivekit-server --model medium.en --host 0.0.0.0 --port 8000 --model_cache_dir /app/cache
     ports:
       - 8000:8000
     devices:
