@@ -36,9 +36,8 @@ def transcribe(audio: UploadFile = File(...)):
         result = model.transcribe(tmp_path)
         transcription = result["text"]
 
-        end = {"transcription": transcription}
-        print(end)
-        return end
+        print(transcription)
+        return {"transcription": transcription}
     finally:
         try:
             os.remove(tmp_path)
