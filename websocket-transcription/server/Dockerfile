@@ -26,6 +26,4 @@ ENV PATH="/home/whisperuser/.local/bin:${PATH}"
 RUN uv venv
 RUN uv pip install whisperlivekit diart
 
-ARG MODEL=tiny.en
-
-CMD ["uv", "run", "whisperlivekit-server", "--model", "${MODEL}", "--host", "0.0.0.0", "--port", "8000", "--model_cache_dir", "/app/cache"]
+CMD ["uv", "run", "whisperlivekit-server", "--model", "$MODEL", "--host", "0.0.0.0", "--port", "8000", "--model_cache_dir", "/app/cache"]

@@ -3,13 +3,12 @@ services:
   whisper-streaming:
     build:
       context: .
-      args:
-        # MODEL: tiny.en
-        MODEL: medium.en
     image: alexmickelson/whisper-streaming:latest
     container_name: whisper-streaming
     volumes:
       - ./cache:/app/cache
+    environment:
+      - MODEL=medium.en
     env_file:
       # HF_TOKEN=your read only token
       # accept terms at 
