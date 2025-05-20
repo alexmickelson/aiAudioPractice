@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>SpeechRecognition Demo</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  </head>
+  <body>
+    <button id="start-btn" type="button">🎤 Start Listening</button>
+    <button id="stop-btn" type="button" disabled>⏸️ Stop Listening</button>
+    <p id="transcript">Transcript will appear here.</p>
+
+    <script type="module">
+      const startBtn = document.getElementById("start-btn");
+      const stopBtn = document.getElementById("stop-btn");
+      const transcriptEl = document.getElementById("transcript");
+
+      let mediaRecorder;
+      let audioChunks = [];
+      let intervalId;
+
+      // Function to convert raw audio data to a valid WAV file
+      function convertToWav(audioBuffer) {
+        const numOfChannels = audioBuffer.numberOfChannels;
+        const sampleRate = audioBuffer.sampleRate;
+        const format = 1; // PCM
+        const bitDepth = 16;
+
+        const samples = audioBuffer.getChannelData(0); // Use the first channel
+        const dataLength = samples.length * (bitDepth / 8);
+        const buffer = new ArrayBuffer(44 + dataLength);
+        const view = new DataView(buffer);
+
+        // Write WAV header
+        let offset = 0;
+        const writeString = (str) => {
+          for (let i = 0; i < str.length; i++) {
+            view.setUint8(offset++, str.charCodeAt(i));
+          }
+        };
+
+        writeString("RIFF");
+        view.setUint32(offset, 36 + dataLength, true);
+        offset += 4;
+        writeString("WAVE");
+        writeString("fmt ");
+        view.setUint32(offset, 16, true);
+        offset += 4; // Subchunk1Size
+        view.setUint16(offset, format, true);
+        offset += 2; // AudioFormat
+        view.setUint16(offset, numOfChannels, true);
+        offset += 2; // NumChannels
+        view.setUint32(offset, sampleRate, true);
+        offset += 4; // SampleRate
+        view.setUint32(
+          offset,
+          sampleRate * numOfChannels * (bitDepth / 8),
+          true
+        );
+        offset += 4; // ByteRate
+        view.setUint16(offset, numOfChannels * (bitDepth / 8), true);
+        offset += 2; // BlockAlign
+        view.setUint16(offset, bitDepth, true);
+        offset += 2; // BitsPerSample
+        writeString("data");
+        view.setUint32(offset, dataLength, true);
+        offset += 4;
+
+        // Write PCM data
+        for (let i = 0; i < samples.length; i++) {
+          const sample = Math.max(-1, Math.min(1, samples[i]));
+          view.setInt16(
+            offset,
+            sample < 0 ? sample * 0x8000 : sample * 0x7fff,
+            true
+          );
+          offset += 2;
+        }
+
+        return new Blob([buffer], { type: "audio/wav" });
+      }
+
+      startBtn.addEventListener("click", async (event) => {
+        event.preventDefault();
+
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({
+            audio: true,
+          });
+          mediaRecorder = new MediaRecorder(stream);
+          audioChunks = [];
+
+          mediaRecorder.ondataavailable = (event) => {
+            audioChunks.push(event.data);
+          };
+
+          mediaRecorder.addEventListener("stop", () => {
+            (async () => {
+              console.log("handling stop");
+
+              // Combine audio chunks into a single Blob
+              const audioBlob = new Blob(audioChunks, { type: "audio/wav" });
+
+              // Decode the audio data and convert it to a valid WAV file
+              const audioContext = new AudioContext();
+              const arrayBuffer = await audioBlob.arrayBuffer();
+              const audioBuffer = await audioContext.decodeAudioData(
+                arrayBuffer
+              );
+              const wavBlob = convertToWav(audioBuffer);
+
+              // Prepare the form data
+              const formData = new FormData();
+              formData.append("audio", wavBlob, "audio.wav");
+
+              try {
+                console.log("before post");
+                const response = await axios.post(
+                  "http://localhost:8000/transcribe",
+                  formData
+                );
+                console.log("after post");
+
+                console.log(response.status, response.data);
+                transcriptEl.textContent = response.data.transcription;
+              } catch (error) {
+                console.error("Error during axios request:", error);
+                transcriptEl.textContent = "Error: Unable to transcribe audio.";
+              }
+            })();
+          });
+
+          mediaRecorder.start();
+          startBtn.disabled = true;
+          stopBtn.disabled = false;
+        } catch (error) {
+          console.error("Error accessing microphone:", error);
+          transcriptEl.textContent = "Error: Unable to access microphone.";
+        }
+      });
+
+      stopBtn.addEventListener("click", (event) => {
+        event.preventDefault();
+        if (mediaRecorder && mediaRecorder.state !== "inactive") {
+          mediaRecorder.stop();
+          startBtn.disabled = false;
+          stopBtn.disabled = true;
+        }
+      });
+    </script>
+  </body>
+</html>

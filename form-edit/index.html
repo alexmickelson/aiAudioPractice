@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Azure OpenAI Realtime Session</title>
+    <script src="./script.js" type="module"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style type="text/tailwindcss">
+      html {
+        @apply bg-white text-gray-900 antialiased;
+      }
+      body {
+        @apply font-sans text-base leading-relaxed;
+      }
+      h1,
+      h2,
+      h3,
+      h4,
+      h5,
+      h6 {
+        @apply font-bold text-gray-800;
+      }
+      h1 {
+        @apply text-3xl mb-4;
+      }
+      h2 {
+        @apply text-2xl mb-3;
+      }
+      h3 {
+        @apply text-xl mb-2;
+      }
+      p {
+        @apply mb-4;
+      }
+      button {
+        @apply px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700 transition;
+      }
+      a {
+        @apply text-blue-600 underline hover:text-blue-800;
+      }
+      input,
+      textarea,
+      select {
+        @apply border rounded px-2 py-1;
+      }
+      code {
+        @apply bg-gray-100 px-1 rounded text-sm;
+      }
+      pre {
+        @apply bg-gray-100 p-2 rounded overflow-x-auto;
+      }
+
+      /* Dark mode styles */
+      html.dark {
+        @apply bg-gray-900 text-gray-100;
+      }
+      html.dark h1,
+      html.dark h2,
+      html.dark h3,
+      html.dark h4,
+      html.dark h5,
+      html.dark h6 {
+        @apply text-gray-100;
+      }
+      html.dark p {
+        @apply text-gray-300;
+      }
+      html.dark button {
+        @apply bg-blue-500 hover:bg-blue-400;
+      }
+      html.dark a {
+        @apply text-blue-400 hover:text-blue-300;
+      }
+      html.dark input,
+      html.dark textarea,
+      html.dark select {
+        @apply border-gray-700 bg-gray-800 text-gray-100;
+      }
+      html.dark code {
+        @apply bg-gray-800 text-gray-300;
+      }
+      html.dark pre {
+        @apply bg-gray-800 text-gray-300;
+      }
+    </style>
+  </head>
+  <body class="p-8">
+    <h1>Azure OpenAI Realtime Session</h1>
+    <p>
+      WARNING: Don't use this code sample in production with the API key
+      hardcoded. Use a protected backend service to call the sessions API and
+      generate the ephemeral key. Then return the ephemeral key to the client.
+    </p>
+    <div id="sessionContainer" class="flex flex-row gap-4 justify-start">
+      <div>
+        <button id="startSession">Start Session</button>
+      </div>
+      <div id="endSessionContainer"></div>
+    </div>
+
+    <div id="lastEvent"></div>
+    <div id="chatWindow" class="flex flex-row gap-4 justify-start">
+      <div
+        id="testForm"
+        class="flex-1 p-4 bg-gray-100 dark:bg-gray-900 rounded shadow"
+      >
+        <form id="userForm" class="space-y-4">
+          <div>
+            <label
+              for="nameInput"
+              class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+            >
+              Name
+            </label>
+            <input
+              type="text"
+              id="nameInput"
+              name="name"
+              placeholder="Enter full name"
+              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"
+            />
+          </div>
+
+          <div>
+            <label
+              for="ageInput"
+              class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+            >
+              Age
+            </label>
+            <input
+              type="number"
+              id="ageInput"
+              name="age"
+              min="0"
+              placeholder="Enter age"
+              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"
+            />
+          </div>
+
+          <div>
+            <label
+              for="descriptionInput"
+              class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+            >
+              Description
+            </label>
+            <textarea
+              id="descriptionInput"
+              name="description"
+              rows="3"
+              placeholder="Short bio or description"
+              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"
+            ></textarea>
+          </div>
+
+          <div>
+            <label
+              for="classList"
+              class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+            >
+              Classes
+            </label>
+            <ul
+              id="classList"
+              class="mt-1 list-disc pl-5 text-gray-700 dark:text-gray-300"
+            >
+              <li>Math</li>
+              <li>Science</li>
+              <li>History</li>
+              <li>Art</li>
+            </ul>
+          </div>
+
+          <button
+            type="button"
+            onclick="submitForm()"
+            class="w-full px-4 py-2 text-white bg-blue-600 rounded-md shadow hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:bg-blue-500 dark:hover:bg-blue-400"
+          >
+            Save
+          </button>
+        </form>
+      </div>
+      <div id="myChat" class="flex-1"></div>
+      <div id="aiChat" class="flex-1"></div>
+    </div>
+
+    <div class="flex w-full gap-4 mt-6 h-96">
+      <div
+        id="logContainer"
+        class="flex-1 border p-4 overflow-y-auto flex flex-col"
+      >
+        Logs will appear here
+      </div>
+      <div
+        class="flex-1 border p-4 bg-gray-50 dark:bg-gray-800"
+        id="transcriptContainer"
+      ></div>
+    </div>
+
+    <script>
+      // Toggle dark mode
+      const toggleDarkMode = () => {
+        document.documentElement.classList.toggle("dark");
+      };
+
+      // Example: Add a button to toggle dark mode
+      const darkModeToggle = document.createElement("button");
+      darkModeToggle.textContent = "Toggle Dark Mode";
+      darkModeToggle.className =
+        "px-4 py-2 rounded bg-gray-700 text-white hover:bg-gray-600 transition mt-4";
+      darkModeToggle.onclick = toggleDarkMode;
+      document.body.appendChild(darkModeToggle);
+    </script>
+  </body>
+</html>

@@ -1,0 +1,33 @@
+[
+  {
+    "type": "function",
+    "name": "update_user",
+    "description": "Update the current user object (name, age, description) and re-render the form.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The user's full name"
+        },
+        "age": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "The user's age in years"
+        },
+        "description": {
+          "type": "string",
+          "description": "A short bio or description"
+        }
+      },
+      "required": ["name", "age", "description"],
+      "additionalProperties": false
+    }
+  },
+  {
+    "type": "function",
+    "name": "get_user",
+    "description": "Get the user currently displayed on the form"
+  }
+]
