@@ -1,7 +1,10 @@
 
 services:
   whisper-streaming:
-    build: .
+    build:
+      context: .
+      args:
+        MODEL: tiny.en
     image: alexmickelson/whisper-streaming:latest
     container_name: whisper-streaming
     volumes:
