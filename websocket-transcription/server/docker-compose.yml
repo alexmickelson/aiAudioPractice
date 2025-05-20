@@ -2,6 +2,7 @@
 services:
   whisper-streaming:
     build: .
+    image: alexmickelson/whisper-streaming:latest
     container_name: whisper-streaming
     volumes:
       - ./cache:/app/cache
