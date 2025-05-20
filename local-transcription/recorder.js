@@ -1,6 +1,6 @@
 const QUIET_DECIBEL_THRESHOLD = -40;
 const DECIBEL_INTERVAL_PERIOD = 100;
-const QUIET_THRESHOLD_COUNT = 10;
+const QUIET_THRESHOLD_COUNT = 4;
 
 let mediaRecorder;
 let audioChunks = [];
@@ -9,6 +9,7 @@ let analyser;
 let source;
 let decibelInterval;
 let quietCount = 0;
+let shouldContinue = true;
 
 const startBtn = document.getElementById("start-btn");
 const stopBtn = document.getElementById("stop-btn");
@@ -34,6 +35,7 @@ function setButtonStates(isRecording) {
   startBtn.disabled = isRecording;
   stopBtn.disabled = !isRecording;
 }
+
 function startDecibelMonitor(analyser, onQuiet) {
   const bufferLength = analyser.fftSize;
   const dataArray = new Uint8Array(bufferLength);
@@ -66,11 +68,15 @@ async function handleRecordingStop() {
       "http://localhost:8000/transcribe",
       formData
     );
-    transcriptEl.textContent =
-      response.data.transcription + `\nQuiet count: ${quietCount}`;
+    transcriptEl.innerHTML += `<div>${response.data.transcription}</div>`;
   } catch (error) {
     console.error("Error during axios request:", error);
-    transcriptEl.textContent = "Error: Unable to transcribe audio.";
+    transcriptEl.innerHTML += "<div>Error: Unable to transcribe audio</div>";
+  }
+
+  // If user hasn't pressed stop, start recording again
+  if (shouldContinue) {
+    startRecording();
   }
 }
 
@@ -82,6 +88,7 @@ function stopRecording() {
 }
 
 async function startRecording() {
+  shouldContinue = true;
   try {
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
     mediaRecorder = new MediaRecorder(stream);
@@ -98,23 +105,26 @@ async function startRecording() {
       audioChunks.push(event.data);
     };
 
-    mediaRecorder.addEventListener("stop", handleRecordingStop);
+    mediaRecorder.addEventListener("stop", handleRecordingStop, { once: true });
 
     mediaRecorder.start();
     setButtonStates(true);
   } catch (error) {
     console.error("Error accessing microphone:", error);
-    transcriptEl.textContent = "Error: Unable to access microphone.";
+    transcriptEl.innerHTML += "<div>Error: Unable to access microphone.</div>";
   }
 }
+
 export function setupRecorder() {
   startBtn.addEventListener("click", (event) => {
     event.preventDefault();
+    shouldContinue = true;
     startRecording();
   });
 
   stopBtn.addEventListener("click", (event) => {
     event.preventDefault();
+    shouldContinue = false;
     stopRecording();
   });
 }
