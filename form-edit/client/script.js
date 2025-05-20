@@ -23,7 +23,7 @@ function handleNewAiResponse() {
 }
 
 async function fetchEphemeralKey() {
-  const response = await fetch("http://localhost/api/ephemeral-key", {
+  const response = await fetch("http://localhost:3001/api/ephemeral-key", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
