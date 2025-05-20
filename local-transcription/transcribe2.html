@@ -11,62 +11,8 @@
     <p id="transcript">Transcript will appear here.</p>
 
     <script type="module">
-      const startBtn = document.getElementById("start-btn");
-      const stopBtn = document.getElementById("stop-btn");
-      const transcriptEl = document.getElementById("transcript");
-
-      let mediaRecorder;
-      let audioChunks = [];
-
-      startBtn.addEventListener("click", async (event) => {
-        event.preventDefault();
-
-        try {
-          const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-          mediaRecorder = new MediaRecorder(stream);
-          audioChunks = [];
-
-          mediaRecorder.ondataavailable = (event) => {
-            audioChunks.push(event.data);
-          };
-
-          mediaRecorder.addEventListener("stop", async () => {
-            // Combine audio chunks into a single Blob
-            const audioBlob = new Blob(audioChunks, { type: "audio/wav" });
-
-            // Prepare the form data
-            const formData = new FormData();
-            formData.append("audio", audioBlob, "audio.wav");
-
-            try {
-              const response = await axios.post(
-                "http://localhost:8000/transcribe",
-                formData
-              );
-              transcriptEl.textContent = response.data.transcription;
-            } catch (error) {
-              console.error("Error during axios request:", error);
-              transcriptEl.textContent = "Error: Unable to transcribe audio.";
-            }
-          });
-
-          mediaRecorder.start();
-          startBtn.disabled = true;
-          stopBtn.disabled = false;
-        } catch (error) {
-          console.error("Error accessing microphone:", error);
-          transcriptEl.textContent = "Error: Unable to access microphone.";
-        }
-      });
-
-      stopBtn.addEventListener("click", (event) => {
-        event.preventDefault();
-        if (mediaRecorder && mediaRecorder.state !== "inactive") {
-          mediaRecorder.stop();
-          startBtn.disabled = false;
-          stopBtn.disabled = true;
-        }
-      });
+      import { setupRecorder } from "./recorder.js";
+      setupRecorder();
     </script>
   </body>
 </html>
