@@ -1,0 +1,16 @@
+
+services:
+  whisper-streaming:
+    build: .
+    container_name: whisper-streaming
+    volumes:
+      - ./cache:/app/cache
+    env_file:
+      # HF_TOKEN=your read only token
+      # accept terms at 
+      # - https://huggingface.co/pyannote/segmentation
+      # - https://huggingface.co/pyannote/embedding
+      # - https://huggingface.co/pyannote/embedding-3.0
+      - .env 
+    ports:
+      - 8000:8000

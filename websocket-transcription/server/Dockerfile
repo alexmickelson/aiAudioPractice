@@ -1,0 +1,33 @@
+FROM python:3.13
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+  ffmpeg \
+  gcc \
+  g++ \
+  make \
+  libffi-dev \
+  libssl-dev \
+  pkg-config \
+  cmake \
+  && rm -rf /var/lib/apt/lists/*
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+  portaudio19-dev \
+  libsndfile1-dev \
+  && rm -rf /var/lib/apt/lists/*
+
+RUN useradd -u 1000 -m whisperuser
+USER whisperuser
+
+WORKDIR /app
+
+RUN pip install --no-cache-dir uv
+ENV PATH="/home/whisperuser/.local/bin:${PATH}"
+RUN uv venv
+RUN uv pip install whisperlivekit diart
+
+# CMD ["uv", "run", "whisperlivekit-server", "--model", "tiny.en", "--host", "0.0.0.0", "--port", "8000", "--diarization"]
+
+# CMD ["uv", "run", "whisperlivekit-server", "--model", "tiny.en", "--host", "0.0.0.0", "--port", "8000" ]
+# small.en tiny.en medium.en
+CMD ["uv", "run", "whisperlivekit-server", "--model", "small.en", "--host", "0.0.0.0", "--port", "8000", "--model_cache_dir", "/app/cache" ]
