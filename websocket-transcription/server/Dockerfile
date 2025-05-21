@@ -15,8 +15,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   libsndfile1-dev \
   && rm -rf /var/lib/apt/lists/*
 
-RUN useradd -u 1000 -m whisperuser
-USER whisperuser
+# RUN useradd -u 1000 -m whisperuser
+# user 1000
+USER ubuntu 
 
 WORKDIR /app
 
