@@ -24,7 +24,6 @@ USER ubuntu
 WORKDIR /app
 
 RUN curl -LsSf https://astral.sh/uv/install.sh | sh
-ENV PATH="$HOME/.local/bin:$PATH"
 ENV PATH="/home/ubuntu/.local/bin:${PATH}"
 RUN uv venv
 RUN uv pip install whisperlivekit diart
