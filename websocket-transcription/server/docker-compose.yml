@@ -22,12 +22,11 @@ services:
         --model_cache_dir /app/cache
     ports:
       - 8000:8000
-    # devices:
-    #   - nvidia.com/gpu=all
-
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - capabilities: [gpu]
-    runtime: nvidia
+    devices:
+      - nvidia.com/gpu=all
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - capabilities: [gpu]
+    # runtime: nvidia

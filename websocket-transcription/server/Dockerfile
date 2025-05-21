@@ -1,7 +1,8 @@
-FROM python:3.13
-# FROM nvidia/cuda:12.8.0-cudnn8-runtime-ubuntu20.04
+# FROM python:3.13
+FROM nvidia/cuda:12.8.0-cudnn-runtime-ubuntu24.04
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
+  python3 python3-pip \
   ffmpeg \
   gcc \
   g++ \
@@ -10,9 +11,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   libssl-dev \
   pkg-config \
   cmake \
-  && rm -rf /var/lib/apt/lists/*
-
-RUN apt-get update && apt-get install -y --no-install-recommends \
   portaudio19-dev \
   libsndfile1-dev \
   && rm -rf /var/lib/apt/lists/*
