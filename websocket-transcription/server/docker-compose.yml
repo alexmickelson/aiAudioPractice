@@ -14,8 +14,20 @@ services:
       # - https://huggingface.co/pyannote/embedding
       # - https://huggingface.co/pyannote/embedding-3.0
       - .env
-    command: uv run whisperlivekit-server --model medium.en --host 0.0.0.0 --port 8000 --model_cache_dir /app/cache
+    command: |
+      uv run whisperlivekit-server \
+        --model medium.en \
+        --host 0.0.0.0 \
+        --port 8000 \
+        --model_cache_dir /app/cache
     ports:
       - 8000:8000
-    devices:
-      - nvidia.com/gpu=all
+    # devices:
+    #   - nvidia.com/gpu=all
+
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities: [gpu]
+    runtime: nvidia

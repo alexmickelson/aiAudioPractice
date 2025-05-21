@@ -1,5 +1,5 @@
-# FROM python:3.13
-FROM nvidia/cuda:12.8.0-cudnn8-runtime-ubuntu20.04
+FROM python:3.13
+# FROM nvidia/cuda:12.8.0-cudnn8-runtime-ubuntu20.04
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
   ffmpeg \
