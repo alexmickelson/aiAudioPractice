@@ -17,7 +17,7 @@ services:
     command: |
       bash -c '
         uv run whisperlivekit-server \
-          --model medium.en \
+          --model tiny.en \
           --host 0.0.0.0 \
           --port 8000 \
           --model_cache_dir /app/cache
