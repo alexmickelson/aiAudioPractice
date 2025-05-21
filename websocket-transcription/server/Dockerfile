@@ -15,15 +15,18 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   libsndfile1-dev \
   && rm -rf /var/lib/apt/lists/*
 
+
+RUN apt-get update && apt-get install -y --no-install-recommends curl
 # RUN useradd -u 1000 -m whisperuser
 # user 1000
 USER ubuntu 
 
 WORKDIR /app
 
-RUN curl -LsSf https://astral.sh/uv/install.sh | sh && \
-  uv venv
+RUN curl -LsSf https://astral.sh/uv/install.sh | sh
+ENV PATH="$HOME/.local/bin:$PATH"
 ENV PATH="/home/ubuntu/.local/bin:${PATH}"
+RUN uv venv
 RUN uv pip install whisperlivekit diart
 
 CMD ["uv", "run", "whisperlivekit-server", "--model", "$MODEL", "--host", "0.0.0.0", "--port", "8000", "--model_cache_dir", "/app/cache"]
